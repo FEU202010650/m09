@@ -1,58 +1,26 @@
-const readline = require('readline');
+const express = require('express');
+const mongoose = require('mongoose');
+const cors = require('cors');
 
-// Global variables
-let username, role;
+const courseRoutes = require('./routes/courseRoutes');
 
-// Create readline interface
-const rl = readline.createInterface({
-  input: process.stdin,
-  output: process.stdout
+const app = express();
+
+mongoose.connect('mongodb+srv://202010650:OCIfyXCTw9AEyASC@sandbox.btzyzmi.mongodb.net/an22_sample_database', {
+  useNewUrlParser: true,
+  useUnifiedTopology: true
+});
+mongoose.connection.once('open', () => {
+  console.log('Now connected to MongoDB Atlas');
 });
 
-// Valid username and role combinations
-const validCredentials = [
-  { username: 'admin', role: 'admin' },
-  { username: 'teacher', role: 'teacher' },
-  { username: 'student', role: 'student' }
-];
+app.use(cors());
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-// Grade data
-const grades = [
-  { role: 'admin', average: 95, letter: 'A' },
-  { role: 'teacher', average: 82, letter: 'B' },
-  { role: 'student', average: 73, letter: 'C' }
-];
+app.use('/users', courseRoutes);
 
-// Login function
-function login() {
-  rl.question("Enter username: ", (enteredUsername) => {
-    const matchedCredentials = validCredentials.find(
-      (credentials) => credentials.username === enteredUsername
-    );
-
-    if (!matchedCredentials) {
-      console.log("Invalid username.");
-      rl.close();
-    } else {
-      username = enteredUsername;
-      role = matchedCredentials.role;
-      displayGrades();
-    }
-  });
-}
-
-// Function to display grades
-function displayGrades() {
-  const matchedGrade = grades.find((grade) => grade.role === role);
-
-  if (!matchedGrade) {
-    console.log("Role out of range.");
-  } else {
-    console.log(`Hello, ${role}, your average is ${matchedGrade.average}. The letter equivalent is ${matchedGrade.letter}`);
-  }
-
-  rl.close();
-}
-
-// Example usage of the login function
-login();
+const port = process.env.PORT || 4000;
+app.listen(port, () => {
+  console.log(`Server running on localhost:${port}`);
+});
